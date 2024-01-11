@@ -2,11 +2,12 @@
 import sys
 
 from robobo_interface import SimulationRobobo, HardwareRobobo
-from learning_machines import run_all_actions
+from learning_machines import run_task_0
 
 
 if __name__ == "__main__":
     # You can do better argument parsing than this!
+    print("system call", sys.argv)
     if len(sys.argv) < 2:
         raise ValueError(
             """To run, we need to know if we are running on hardware of simulation
@@ -19,4 +20,4 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{sys.argv[1]} is not a valid argument.")
 
-    run_all_actions(rob)
+    run_task_0(rob)
