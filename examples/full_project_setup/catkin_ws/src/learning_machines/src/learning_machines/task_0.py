@@ -1,6 +1,7 @@
 import cv2
+import csv
 
-from data_files import FIGRURES_DIR
+from data_files import FIGRURES_DIR, RESULT_DIR
 from robobo_interface import (
     IRobobo,
     Emotion,
@@ -69,19 +70,51 @@ def run_the_actions(rob: IRobobo):
     if isinstance(rob, SimulationRobobo):
         rob.stop_simulation()
 
-def run_task_0(rob):
+def wheel_and_turn(rob):
     if isinstance(rob, SimulationRobobo):
         rob.play_simulation()
+
+    irs_data = []
+
     print("IRS data: ", rob.read_irs())
     while all([r < 80 for r in  rob.read_irs()[3:]] ):
         rob.move(51, 50, millis=100)
         print("IRS data: ", rob.read_irs())
+        irs_data.append(rob.read_irs())
     print("IRS data: ", rob.read_irs())
+    irs_data.append(rob.read_irs())
     rob.move_blocking(-50, -50, 1000)
     rob.move_blocking(20, -20, 5100)
 
     if isinstance(rob, SimulationRobobo):
         rob.stop_simulation()
+
+    return irs_data
+
+def run_task_0(rob):
+    loops = 10
+    irs_dict = {}
+    
+    for i in range(loops):
+        data = wheel_and_turn(rob)
+        irs_dict[i] = data
+    
+    print(irs_dict)
+
+        # # irs_dict[key] = irs_dict[key].append(key)
+        # with open(str(RESULT_DIR / "results.csv") , 'w') as f:
+     
+        #     # using csv.writer method from CSV package
+        #     write = csv.writer(f)
+
+        #     for key in irs_dict:
+        #         f.write('row')
+        #         print(irs_dict[key])
+
+        # f.close()
+    
+
+
 
 
 # rob.move_blocking(10, 100, 1000) --> l, r, time
