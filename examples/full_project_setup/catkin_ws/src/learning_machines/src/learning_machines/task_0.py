@@ -1,7 +1,5 @@
-from robobo_interface import (
-    SimulationRobobo,
-)
-        
+from robobo_interface import SimulationRobobo
+import numpy as np
 
 def wheel_and_turn(rob):
     irs_data = []
@@ -21,10 +19,9 @@ def wheel_and_turn(rob):
     print("IRS data : ", rob.read_irs())
     print("I'm running this function")  
     irs_data.append(rob.read_irs())
-    rob.move_blocking(-50, -50, 1000)
-    rob.move_blocking(20, -20, 5100) 
-    rob.reset_wheels() 
-    
+    rob.move_blocking(-50, -50, 1000) # move back
+    rob.move(20, -20, 5100) # spin
+    rob.reset_wheels()   
 
     return irs_data
 
@@ -34,6 +31,9 @@ def run_task_0(rob):
         rob.play_simulation()
     print(" ")
     data = wheel_and_turn(rob)
+    data = np.array(data)
+    np.savez(f"/root/results/irs_data_{'virt' if rob is SimulationRobobo else 'real'}.npz")
+
     print(data)
 
     if isinstance(rob, SimulationRobobo):
