@@ -1,5 +1,5 @@
 from robobo_interface import SimulationRobobo
-        
+import numpy as np
 
 def wheel_and_turn(rob):
     irs_data = []
@@ -30,7 +30,8 @@ def run_task_0(rob):
         rob.play_simulation()
 
     data = wheel_and_turn(rob)
-    
+    data = np.array(data)
+    np.savez(f"/root/results/irs_data_{'virt' if rob is SimulationRobobo else 'real'}.npz")
 
     print(data)
 
