@@ -90,9 +90,9 @@ class PolicyGradientModel:
             
         return scores
 
-    def train(self, n_episodes, max_steps_num, gamma):
+    def train(self, num_episodes, max_steps_num, gamma):
         scores = self._reinforce(self.policy, self.optimizer,
-                                 n_training_episodes=n_episodes,
+                                 n_training_episodes=num_episodes,
                                  max_t=max_steps_num, gamma=gamma)
         return scores
 
