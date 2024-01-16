@@ -30,7 +30,7 @@ class Policy(nn.Module):
         return F.softmax(x, dim=1)
     
     def act(self, state):
-        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
+        state = torch.from_numpy(np.array(state)).float().unsqueeze(0).to(device)
         probs = self.forward(state).cpu()
         m = Categorical(probs)
         action = m.sample()
@@ -44,7 +44,7 @@ class PolicyGradientModel:
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
 
 
-    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every):
+    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=100):
         scores_deque = deque(maxlen=100)
         scores = []
 
@@ -90,10 +90,10 @@ class PolicyGradientModel:
             
         return scores
 
-    def train(self, num_episodes, max_steps_num, gamma):
+    def train(self, num_episodes, max_t, gamma):
         scores = self._reinforce(self.policy, self.optimizer,
                                  n_training_episodes=num_episodes,
-                                 max_t=max_steps_num, gamma=gamma)
+                                 max_t=max_t, gamma=gamma)
         return scores
 
     def predict(self, state):

@@ -14,7 +14,7 @@ def do_stuff(rob):
     while iter < max_iter:
         observation = get_observation(rob)
 
-        action = model.predict(observation)
+        action = model.predict(observation[0])
         do_action(rob, action)
         reward += get_reward(rob)
         iter += 1
