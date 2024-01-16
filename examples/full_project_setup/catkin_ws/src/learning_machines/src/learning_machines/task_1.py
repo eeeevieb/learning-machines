@@ -1,49 +1,28 @@
-from robobo_interface import SimulationRobobo, IRobobo
+from robobo_interface import SimulationRobobo
+from RL_policygrad import PolicyGradientModel
 import numpy as np
+from irobobo_extensions import get_observation, get_reward, do_action
 
-THRESHOLD = 100
-POSSIBLE_ACTIONS = ['move_forward', 'turn_right', 'turn_left', 'move_back']
-
-def get_number_of_target_pixels(img):
-    return 1
-
-
-def get_reward(rob:IRobobo):
-    image = rob.get_image_front()
-    return get_number_of_target_pixels(image)
-
-
-def get_observation(rob:IRobobo):
-    return rob.read_irs()
-
-
-def do_action(rob:IRobobo, action):
-    
-    if action not in POSSIBLE_ACTIONS:
-        print('do_action(): action unknown:', action)
-        return
-    
-    if action == 'move_forward':
-        rob.move(50, 50, 100)
-    elif action == 'turn_right':
-        rob.move(50, 0, 50)
-    elif action == 'turn_left':
-        rob.move(0, 50, 50)
-    else:
-        rob.move(-20, -20, 100)
-        
 
 def do_stuff(rob):
-    reward = get_reward(rob)
-    while reward < THRESHOLD:
+    model = PolicyGradientModel(rob, 16)
+    model.train(num_episodes=1000, max_t=100, gamma=0.99)
+
+    reward = 0
+    max_iter = 1000
+    iter = 0
+    while iter < max_iter:
         observation = get_observation(rob)
-        action = model.pick_action(observation)
+
+        action = model.predict(observation)
         do_action(rob, action)
+        reward += get_reward(rob)
+        iter += 1
 
 
 
 
-def run_task_0(rob):
+def run_task_1(rob):
     if isinstance(rob, SimulationRobobo):
         rob.play_simulation()
     print(" ")

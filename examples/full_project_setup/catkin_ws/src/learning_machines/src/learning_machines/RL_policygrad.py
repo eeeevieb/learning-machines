@@ -8,11 +8,15 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 
+from irobobo_extensions import get_observation, get_reward, get_simulation_done
+from irobobo_extensions import POSSIBLE_ACTIONS, do_action
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 S_SIZE = 8 # 8 numbers per observation - 8 irs sensors
 A_SIZE = 4 # 4 actions - forward, right, left, back
+
 
 class Policy(nn.Module):
     def __init__(self, s_size, a_size, h_size):
@@ -31,24 +35,30 @@ class Policy(nn.Module):
         m = Categorical(probs)
         action = m.sample()
         return action.item(), m.log_prob(action)
-    
+
+
 class PolicyGradientModel:
-    def __init__(self, rob):
+    def __init__(self, rob, hidden_size):
         self.rob = rob
+        self.policy = Policy(S_SIZE, A_SIZE, hidden_size)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
 
 
-    def reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every):
+    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every):
         scores_deque = deque(maxlen=100)
         scores = []
 
         for i_episode in range(1, n_training_episodes+1):
             saved_log_probs = []
             rewards = []
-            state = env.reset()
+            state = get_observation(self.rob)[0]
             for t in range(max_t):
                 action, log_prob = policy.act(state)
                 saved_log_probs.append(log_prob)
-                state, reward, done, _ = env.step(action)
+                
+                do_action(self.rob, action)
+                state, reward, done = get_observation(self.rob)[0], get_reward(self.rob), get_simulation_done(self.rob)
+                
                 rewards.append(reward)
                 if done:
                     break 
@@ -80,15 +90,16 @@ class PolicyGradientModel:
             
         return scores
 
+def train(self, n_episodes, max_steps_num, gamma):
+    scores = self._reinforce(self.policy, self.optimizer,
+                    n_training_episodes=n_episodes,
+                      max_t=max_steps_num, gamma=gamma)
+    return scores
 
-h_size = 16
-policy = Policy(S_SIZE, A_SIZE, 32)
-optimizer = optim.Adam(policy.parameters(), lr=1e-3)
+def predict(self, state):
+    predicted_action, proba = self.policy.act(state)
+    return POSSIBLE_ACTIONS[predicted_action], proba
 
-scores = reinforce(policy, optimizer,
-                    n_training_episodes=1000,
-                      max_t=100,
-                        gamma=0.99)
 
 def evaluate_agent(env, max_steps, n_eval_episodes, policy):
   """
