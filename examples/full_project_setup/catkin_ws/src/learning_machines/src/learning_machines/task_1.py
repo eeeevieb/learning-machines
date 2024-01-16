@@ -1,7 +1,7 @@
 from robobo_interface import SimulationRobobo
-from RL_policygrad import PolicyGradientModel
+from .rl_policygrad import PolicyGradientModel
 import numpy as np
-from irobobo_extensions import get_observation, get_reward, do_action
+from .irobobo_extensions import get_observation, get_reward, do_action
 
 
 def do_stuff(rob):

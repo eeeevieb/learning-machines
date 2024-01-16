@@ -14,7 +14,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.reallife:
-        rob = HardwareRobobo(camera=False)
+        rob = HardwareRobobo(camera=True)
     elif args.simulation:
         rob = SimulationRobobo()
         
