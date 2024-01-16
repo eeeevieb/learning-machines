@@ -1,5 +1,5 @@
 from robobo_interface import SimulationRobobo
-from .rl_policygrad import PolicyGradientModel
+from .RL_policygrad import PolicyGradientModel
 import numpy as np
 from .irobobo_extensions import get_observation, get_reward, do_action
 
