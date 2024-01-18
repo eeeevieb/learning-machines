@@ -16,7 +16,7 @@ def get_reward(rob:IRobobo):
     image = rob.get_image_front()
     pixels = get_number_of_target_pixels(image)
     obs=max(rob.read_irs())
-    obstacles= np.clip(obs, 0, 100) / 100
+    obstacles= obs/ 100
     orient = rob.read_wheels()
 
     reward = pixels * (1-obstacles) # * (1-abs(orient.wheel_pos_l - orient.wheel_speed_r)) # check 
@@ -35,13 +35,15 @@ def do_action(rob:IRobobo, action):
     
     if action not in POSSIBLE_ACTIONS:
         print('do_action(): action unknown:', action)
-        return
-    
+        return 0
+    block = 0
     if action == 'move_forward':
-        rob.move(50, 50, 100)
+        block = rob.move(50, 50, 200)
     elif action == 'turn_right':
-        rob.move(50, 0, 50)
+        block = rob.move(50, 0, 50)
     elif action == 'turn_left':
-        rob.move(0, 50, 50)
+        block = rob.move(0, 50, 50)
     else:
-        rob.move(-20, -20, 100)
+        block = rob.move(-20, -20, 200)
+    return block
+    

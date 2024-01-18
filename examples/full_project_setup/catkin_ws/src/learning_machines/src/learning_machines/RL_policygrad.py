@@ -37,7 +37,7 @@ class Policy(nn.Module):
         try:
             m = Categorical(probs)
         except:
-            m = 3
+            m = Categorical([.1, .1, .1, .7])
         action = m.sample()
         return action.item(), m.log_prob(action)
 
@@ -46,6 +46,7 @@ class PolicyGradientModel:
     def __init__(self, rob, hidden_size):
         self.rob = rob
         self.init_position = self.rob.position()
+        self.init_orientation = self.rob.read_orientation()
         self.policy = Policy(S_SIZE, A_SIZE, hidden_size)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
 
@@ -62,13 +63,14 @@ class PolicyGradientModel:
                 action, log_prob = policy.act(state)
                 saved_log_probs.append(log_prob)
                 
-                do_action(self.rob, POSSIBLE_ACTIONS[action])
+                block = do_action(self.rob, POSSIBLE_ACTIONS[action])
                 state, reward, done = get_observation(self.rob)[0], get_reward(self.rob), get_simulation_done(self.rob)
                 
                 rewards.append(reward)
+                self.rob.is_blocked(block)
                 if done:
                     self.rob.stop_simulation()
-                    self.rob.set_position(self.init_position)
+                    self.rob.set_position(self.init_position, self.init_orientation)
                     self.rob.play_simulation()
                     break 
             scores_deque.append(sum(rewards))
@@ -142,6 +144,5 @@ class PolicyGradientModel:
     def save_model(self, path):
         if os.path.exists(path):
             print(f"Policy gradient model save() WARN: file {path} exists, saving under {path.split('.')[0]}(1)")
-            path = '.'.join([path.split('.')[0]+'(1)', path.split('.')[1:]])
         torch.save(self.policy, path)
         print(f"Policy gradient model save() INFO: saved under {path}")
