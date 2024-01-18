@@ -9,4 +9,4 @@ export ROS_MASTER_URI="http://localhost:11311"
 #    hostname -I | awk '{print $1}'
 # macOS:
 #    ifconfig en0 | awk '/inet / {print $2}'
-export COPPELIA_SIM_IP="130.37.69.231"
+export COPPELIA_SIM_IP="145.108.73.204"
