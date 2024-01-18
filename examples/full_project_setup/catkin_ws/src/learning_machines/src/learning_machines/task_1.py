@@ -9,11 +9,11 @@ def do_stuff(rob):
     print('INFO setup model')
 
     print('INFO started training model')
-    model.train(num_episodes=1000, max_t=100, gamma=0.99)
+    model.train(num_episodes=100, max_t=100, gamma=0.99)
     model.save('polgrad.pth')
 
     reward = 0
-    max_iter = 1000
+    max_iter = 10
     iter = 0
     while iter < max_iter:
         observation = get_observation(rob)
@@ -31,6 +31,8 @@ def run_task_1(rob):
     if isinstance(rob, SimulationRobobo):
         rob.play_simulation()
     print(" ")
+
+    # rob.set_phone_tilt(90, 50)
     
     do_stuff(rob)
 

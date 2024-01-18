@@ -51,7 +51,7 @@ class PolicyGradientModel:
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
 
 
-    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=1):
+    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=10):
         scores_deque = deque(maxlen=100)
         scores = []
 
@@ -64,15 +64,20 @@ class PolicyGradientModel:
                 saved_log_probs.append(log_prob)
                 
                 block = do_action(self.rob, POSSIBLE_ACTIONS[action])
-                state, reward, done = get_observation(self.rob)[0], get_reward(self.rob), get_simulation_done(self.rob)
+                state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t), get_simulation_done(self.rob)
                 
-                rewards.append(reward)
-                self.rob.is_blocked(block)
                 if done:
                     self.rob.stop_simulation()
                     self.rob.set_position(self.init_position, self.init_orientation)
                     self.rob.play_simulation()
-                    break 
+
+                rewards.append(reward)
+                self.rob.is_blocked(block)
+
+            self.rob.stop_simulation()
+            self.rob.set_position(self.init_position, self.init_orientation)
+            self.rob.play_simulation()
+
             scores_deque.append(sum(rewards))
             scores.append(sum(rewards))
             
