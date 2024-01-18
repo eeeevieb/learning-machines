@@ -52,7 +52,7 @@ class PolicyGradientModel:
 
 
     def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=10):
-        scores_deque = deque(maxlen=100)
+        scores_deque = deque(maxlen=print_every)
         scores = []
 
         for i_episode in tqdm(range(1, n_training_episodes+1)):
@@ -64,7 +64,7 @@ class PolicyGradientModel:
                 saved_log_probs.append(log_prob)
                 
                 block = do_action(self.rob, POSSIBLE_ACTIONS[action])
-                state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t), get_simulation_done(self.rob)
+                state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
                 
                 if done:
                     self.rob.stop_simulation()

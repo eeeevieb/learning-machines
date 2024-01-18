@@ -9,19 +9,20 @@ def do_stuff(rob):
     print('INFO setup model')
 
     print('INFO started training model')
-    model.train(num_episodes=100, max_t=100, gamma=0.99)
+    model.train(num_episodes=1000, max_t=100, gamma=0.99)
     model.save_model('polgrad.pth')
 
     reward = 0
-    max_iter = 10
+    max_iter = 100
     iter = 0
     while iter < max_iter:
         observation = get_observation(rob)
 
-        action_i = model.predict(observation[0])
-        action = POSSIBLE_ACTIONS[action_i]
+        action, i = model.predict(observation[0])
+        
         do_action(rob, action)
-        reward += get_reward(rob)
+        reward += get_reward(rob,iter,action)
+        print(reward)
         iter += 1
 
 
@@ -32,7 +33,7 @@ def run_task_1(rob):
         rob.play_simulation()
     print(" ")
 
-    # rob.set_phone_tilt(90, 50)
+    rob.set_phone_tilt(90, 50)
     
     do_stuff(rob)
 
