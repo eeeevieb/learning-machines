@@ -22,7 +22,6 @@ def do_stuff(rob):
         
         do_action(rob, action)
         reward += get_reward(rob,iter,action)
-        print(reward)
         iter += 1
 
 
