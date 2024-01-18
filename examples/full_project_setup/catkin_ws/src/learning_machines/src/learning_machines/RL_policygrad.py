@@ -34,7 +34,10 @@ class Policy(nn.Module):
     def act(self, state):
         state = torch.from_numpy(np.array(state)).float().unsqueeze(0).to(device)
         probs = self.forward(state).cpu()
-        m = Categorical(probs)
+        try:
+            m = Categorical(probs)
+        except:
+            m = 3
         action = m.sample()
         return action.item(), m.log_prob(action)
 
@@ -42,11 +45,12 @@ class Policy(nn.Module):
 class PolicyGradientModel:
     def __init__(self, rob, hidden_size):
         self.rob = rob
+        self.init_position = self.rob.position()
         self.policy = Policy(S_SIZE, A_SIZE, hidden_size)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
 
 
-    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=100):
+    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=10):
         scores_deque = deque(maxlen=100)
         scores = []
 
@@ -63,6 +67,9 @@ class PolicyGradientModel:
                 
                 rewards.append(reward)
                 if done:
+                    self.rob.stop_simulation()
+                    self.rob.set_position(self.init_position)
+                    self.rob.play_simulation()
                     break 
             scores_deque.append(sum(rewards))
             scores.append(sum(rewards))
@@ -89,6 +96,7 @@ class PolicyGradientModel:
             
             if i_episode % print_every == 0:
                 print('Episode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_deque)))
+                self.save_model('intermediate_cp.pth')
             
         return scores
 
@@ -134,6 +142,6 @@ class PolicyGradientModel:
     def save_model(self, path):
         if os.path.exists(path):
             print(f"Policy gradient model save() WARN: file {path} exists, saving under {path.split('.')[0]}(1)")
-            path = '.'.join(path.split('.')[0]+'(1)', path.split('.')[1:])
+            path = '.'.join([path.split('.')[0]+'(1)', path.split('.')[1:]])
         torch.save(self.policy, path)
         print(f"Policy gradient model save() INFO: saved under {path}")

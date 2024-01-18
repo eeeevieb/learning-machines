@@ -28,7 +28,7 @@ def get_observation(rob:IRobobo):
 
 
 def get_simulation_done(rob:IRobobo):
-    return False
+    return any(np.array(rob.read_irs()) > 150)
 
 
 def do_action(rob:IRobobo, action):
