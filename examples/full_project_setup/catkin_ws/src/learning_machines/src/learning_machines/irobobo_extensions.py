@@ -7,19 +7,20 @@ POSSIBLE_ACTIONS = ['move_forward', 'turn_right', 'turn_left', 'move_back']
 
 def get_number_of_target_pixels(img):
     blue, green, red = cv2.split(img)
+    px_num = blue.shape[0]*blue.shape[1]
     mask = (blue > green) & (blue > red)
     count = np.count_nonzero(mask)
-    return count
+    return count / px_num
 
 
 def get_reward(rob:IRobobo):
     image = rob.get_image_front()
     pixels = get_number_of_target_pixels(image)
     obs=max(rob.read_irs())
-    obstacles= obs/ 100
-    orient = rob.read_wheels()
+    obstacles= obs
+    #orient = rob.read_wheels()
 
-    reward = pixels * (1-obstacles) # * (1-abs(orient.wheel_pos_l - orient.wheel_speed_r)) # check 
+    reward = pixels * (100-obstacles) # * (1-abs(orient.wheel_pos_l - orient.wheel_speed_r)) # check 
     return reward
 
 
@@ -28,7 +29,8 @@ def get_observation(rob:IRobobo):
 
 
 def get_simulation_done(rob:IRobobo):
-    return any(np.array(rob.read_irs()) > 150)
+    return False
+    # return any(np.array(rob.read_irs()) > 150)
 
 
 def do_action(rob:IRobobo, action):

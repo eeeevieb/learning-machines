@@ -51,7 +51,7 @@ class PolicyGradientModel:
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
 
 
-    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=10):
+    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=1):
         scores_deque = deque(maxlen=100)
         scores = []
 
