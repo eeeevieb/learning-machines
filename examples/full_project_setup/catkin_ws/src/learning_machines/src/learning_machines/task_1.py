@@ -10,7 +10,7 @@ def do_stuff(rob):
 
     print('INFO started training model')
     model.train(num_episodes=100, max_t=100, gamma=0.99)
-    model.save('polgrad.pth')
+    model.save_model('polgrad.pth')
 
     reward = 0
     max_iter = 10

@@ -20,11 +20,11 @@ def get_reward(rob:IRobobo, t):
     obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000) - 0.001
 
     orient = rob.read_wheels()
-    ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (10*t+1))
+    ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (500*t +1))
     
     reward = pixels * (1-obstacles) * (1 - ori) # check 
-    # print(f"pixels: {pixels}, obs: {obstacles}, orient: {ori}, reward: {reward}")
-    # print(orient)
+    print(f"pixels: {pixels}, obs: {obstacles}, orient: {ori}, reward: {reward}")
+    print(orient)
     return reward
 
 
