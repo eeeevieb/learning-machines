@@ -10,6 +10,8 @@ from torch.distributions import Categorical
 
 from .irobobo_extensions import get_observation, get_reward, get_simulation_done
 from .irobobo_extensions import POSSIBLE_ACTIONS, do_action
+import os
+from tqdm import tqdm
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -48,7 +50,7 @@ class PolicyGradientModel:
         scores_deque = deque(maxlen=100)
         scores = []
 
-        for i_episode in range(1, n_training_episodes+1):
+        for i_episode in tqdm(range(1, n_training_episodes+1)):
             saved_log_probs = []
             rewards = []
             state = get_observation(self.rob)[0]
@@ -56,7 +58,7 @@ class PolicyGradientModel:
                 action, log_prob = policy.act(state)
                 saved_log_probs.append(log_prob)
                 
-                do_action(self.rob, action)
+                do_action(self.rob, POSSIBLE_ACTIONS[action])
                 state, reward, done = get_observation(self.rob)[0], get_reward(self.rob), get_simulation_done(self.rob)
                 
                 rewards.append(reward)
@@ -101,7 +103,7 @@ class PolicyGradientModel:
         return POSSIBLE_ACTIONS[predicted_action], proba
 
 
-    def evaluate_agent(env, max_steps, n_eval_episodes, policy):
+    def __evaluate_agent(env, max_steps, n_eval_episodes, policy):
       """
       Evaluate the agent for ``n_eval_episodes`` episodes and returns average reward and std of reward.
      :param env: The evaluation environment
@@ -129,5 +131,9 @@ class PolicyGradientModel:
 
       return mean_reward, std_reward
 
-
-# evaluate_agent(eval_env, cartpole_hyperparameters["max_t"], cartpole_hyperparameters["n_evaluation_episodes"], cartpole_policy)
+    def save_model(self, path):
+        if os.path.exists(path):
+            print(f"Policy gradient model save() WARN: file {path} exists, saving under {path.split('.')[0]}(1)")
+            path = '.'.join(path.split('.')[0]+'(1)', path.split('.')[1:])
+        torch.save(self.policy, path)
+        print(f"Policy gradient model save() INFO: saved under {path}")
