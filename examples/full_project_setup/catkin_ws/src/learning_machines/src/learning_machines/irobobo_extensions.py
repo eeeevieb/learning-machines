@@ -22,7 +22,7 @@ def get_reward(rob:IRobobo, t, action):
     orient = rob.read_wheels()
     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (50*t +1))
 
-    turns = (0.9 if action == 0 or action == 3  else 0)
+    turns = (0.9 if (action == 'turn_right' or action == 'turn_left' or action == 1 or action == 2) else 0)
     
     #reward = pixels * (1-obstacles) * (1 - ori) # check 
     reward = pixels * (1-obstacles) * (1 - turns)
