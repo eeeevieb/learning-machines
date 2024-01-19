@@ -13,6 +13,9 @@ def get_number_of_target_pixels(img):
     return (count / px_num) + 0.001
 
 
+def get_reward_for_food(rob:IRobobo, action):
+    return rob.nr_food_collected()*100
+
 def get_reward(rob:IRobobo, t, action):
     image = rob.get_image_front()
     pixels = get_number_of_target_pixels(image)
@@ -32,6 +35,7 @@ def get_reward(rob:IRobobo, t, action):
 
 
 def get_observation(rob:IRobobo):
+    # return [*rob.read_irs(), get_number_of_target_pixels(rob.get_image_front)], rob.get_image_front()
     return rob.read_irs(), rob.get_image_front()
 
 
@@ -39,9 +43,7 @@ def get_simulation_done(rob:IRobobo):
     image = rob.get_image_front()
     pixels = get_number_of_target_pixels(image)
 
-    if pixels == 1.001:
-        return True 
-    return False
+    return pixels == 1.001
     # return any(np.array(rob.read_irs()) > 150)
 
 

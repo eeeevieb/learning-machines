@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 
-from .irobobo_extensions import get_observation, get_reward, get_simulation_done
+from .irobobo_extensions import get_observation, get_reward, get_reward_for_food, get_simulation_done
 from .irobobo_extensions import POSSIBLE_ACTIONS, do_action
 import os
 from tqdm import tqdm
@@ -16,7 +16,7 @@ from tqdm import tqdm
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-S_SIZE = 8 # 8 numbers per observation - 8 irs sensors
+S_SIZE = 8 # 8 numbers per observation - 8 irs sensors + number of target pixels
 A_SIZE = 4 # 4 actions - forward, right, left, back
 
 
@@ -51,7 +51,7 @@ class PolicyGradientModel:
         self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
 
 
-    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every=10):
+    def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every):
         scores_deque = deque(maxlen=print_every)
         scores = []
 
@@ -64,12 +64,13 @@ class PolicyGradientModel:
                 saved_log_probs.append(log_prob)
                 
                 block = do_action(self.rob, POSSIBLE_ACTIONS[action])
-                state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
+                # state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
+                state, reward, done = get_observation(self.rob)[0], get_reward_for_food(self.rob, t, action), get_simulation_done(self.rob)
                 
-                # if done:
-                #     self.rob.stop_simulation()
-                #     self.rob.set_position(self.init_position, self.init_orientation)
-                #     self.rob.play_simulation()
+                if done:
+                    self.rob.stop_simulation()
+                    self.rob.set_position(self.init_position, self.init_orientation)
+                    self.rob.play_simulation()
 
                 rewards.append(reward)
                 self.rob.is_blocked(block)
@@ -108,8 +109,8 @@ class PolicyGradientModel:
             
         return scores
 
-    def train(self, num_episodes, max_t, gamma):
-        scores = self._reinforce(self.policy, self.optimizer,
+    def train(self, num_episodes, max_t, gamma, print_every=10):
+        scores = self._reinforce(self.policy, self.optimizer, print_every,
                                  n_training_episodes=num_episodes,
                                  max_t=max_t, gamma=gamma)
         return scores
