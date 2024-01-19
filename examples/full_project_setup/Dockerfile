@@ -24,6 +24,9 @@ WORKDIR /root/catkin_ws
 COPY ./catkin_ws .
 RUN bash -c "source /opt/ros/noetic/setup.bash && catkin_make"
 
+# copy weights
+COPY ./results/* ./results/
+
 # Set up the envoirement to actually run the code
 COPY ./scripts/entrypoint.bash ./entrypoint.bash
 COPY ./scripts/setup.bash ./setup.bash

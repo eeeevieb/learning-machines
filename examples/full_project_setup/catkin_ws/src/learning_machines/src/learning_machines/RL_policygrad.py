@@ -102,8 +102,9 @@ class PolicyGradientModel:
             optimizer.step()
             
             if i_episode % print_every == 0:
+                name = f"intermediate_cp_{i_episode}.pth"
                 print('Episode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_deque)))
-                self.save_model('intermediate_cp.pth')
+                self.save_model(name)
             
         return scores
 
@@ -147,7 +148,8 @@ class PolicyGradientModel:
       return mean_reward, std_reward
 
     def save_model(self, path):
+
         if os.path.exists(path):
             print(f"Policy gradient model save() WARN: file {path} exists, saving under {path.split('.')[0]}(1)")
-        torch.save(self.policy, path)
+        torch.save(self.policy.state_dict(), path)
         print(f"Policy gradient model save() INFO: saved under {path}")
