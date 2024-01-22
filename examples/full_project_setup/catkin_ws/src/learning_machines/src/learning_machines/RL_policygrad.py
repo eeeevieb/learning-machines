@@ -16,7 +16,7 @@ from tqdm import tqdm
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-S_SIZE = 8 # 8 numbers per observation - 8 irs sensors + number of target pixels
+S_SIZE = 10 # 10 numbers per observation: 8 irs sensors + number of target pixels in left and right part
 A_SIZE = 4 # 4 actions - forward, right, left, back
 
 
@@ -37,7 +37,7 @@ class Policy(nn.Module):
         try:
             m = Categorical(probs)
         except:
-            m = Categorical([.1, .1, .1, .7])
+            m = Categorical([.25, .25, .25, .25])
         action = m.sample()
         return action.item(), m.log_prob(action)
 
@@ -65,7 +65,9 @@ class PolicyGradientModel:
                 
                 block = do_action(self.rob, POSSIBLE_ACTIONS[action])
                 # state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
-                state, reward, done = get_observation(self.rob)[0], get_reward_for_food(self.rob, t, action), get_simulation_done(self.rob)
+                state, reward, done = get_observation(self.rob)[0],\
+                      get_reward_for_food(self.rob, action)+get_reward(self.rob, action),\
+                          get_simulation_done(self.rob)
                 
                 if done:
                     self.rob.stop_simulation()
@@ -110,7 +112,7 @@ class PolicyGradientModel:
         return scores
 
     def train(self, num_episodes, max_t, gamma, print_every=10):
-        scores = self._reinforce(self.policy, self.optimizer, print_every,
+        scores = self._reinforce(self.policy, self.optimizer, print_every=print_every,
                                  n_training_episodes=num_episodes,
                                  max_t=max_t, gamma=gamma)
         return scores

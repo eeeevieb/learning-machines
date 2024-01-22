@@ -2,7 +2,7 @@
 import sys, argparse
 
 from robobo_interface import SimulationRobobo, HardwareRobobo
-from learning_machines import run_task_1
+from learning_machines import run_task_2
 
 
 if __name__ == "__main__":
@@ -21,4 +21,4 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"{sys.argv[1]} is not a valid argument.")
 
-    run_task_1(rob)
+    run_task_2(rob)

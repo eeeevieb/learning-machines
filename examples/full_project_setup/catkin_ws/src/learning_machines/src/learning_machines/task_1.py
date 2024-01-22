@@ -9,11 +9,11 @@ def do_stuff(rob):
     model = PolicyGradientModel(rob, 16)
     print('INFO setup model')
     # model.save_model('polgrad.pth')
-    model.policy.load_state_dict(torch.load('./results/intermediate_cp_50.pth'))
-    print('INFO loaded model from checkpoint')
-    # print('INFO started training model')
-    # model.train(num_episodes=100, max_t=100, gamma=0.99)
-    # model.save_model('polgrad.pth')
+    # model.policy.load_state_dict(torch.load('./results/intermediate_cp_50.pth'))
+    # print('INFO loaded model from checkpoint')
+    print('INFO started training model')
+    model.train(num_episodes=1000, max_t=100, gamma=0.5)
+    model.save_model('polgrad.pth')
 
     reward = 0
     max_iter = 100
@@ -27,7 +27,8 @@ def do_stuff(rob):
         curr_reward = get_reward(rob,iter,action)
         reward += curr_reward
         iter += 1
-        # print(curr_reward)
+        if iter % 50 == 0:
+            print(curr_reward)
     print('final', reward)
 
 

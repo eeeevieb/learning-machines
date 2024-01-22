@@ -2,48 +2,71 @@ from robobo_interface import IRobobo
 import numpy as np
 import cv2
 
-THRESHOLD = 100
 POSSIBLE_ACTIONS = ['move_forward', 'turn_right', 'turn_left', 'move_back']
+LAST_FOOD_COLLECTED:int = 0
 
 def get_number_of_target_pixels(img):
     blue, green, red = cv2.split(img)
     px_num = blue.shape[0]*blue.shape[1]
-    mask = (blue > green) & (blue > red)
+    mask = (green > blue+10) & (green > red+10)
     count = np.count_nonzero(mask)
     return (count / px_num) + 0.001
 
 
+def get_number_of_tgt_px_left_right(img):
+    left_img, right_img = img[:, :img.shape[1]//2, :], img[:, img.shape[1]//2:, :]
+    return get_number_of_target_pixels(left_img), get_number_of_target_pixels(right_img)
+
+
 def get_reward_for_food(rob:IRobobo, action):
-    return rob.nr_food_collected()*100
+    global LAST_FOOD_COLLECTED
+    food_collected = LAST_FOOD_COLLECTED
+    if rob.nr_food_collected() > food_collected:
+        LAST_FOOD_COLLECTED = LAST_FOOD_COLLECTED + 1
+        return 100
+    else:
+        return 0
 
-def get_reward(rob:IRobobo, t, action):
-    image = rob.get_image_front()
-    pixels = get_number_of_target_pixels(image)
 
-    obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000) - 0.001
+def get_reward(rob, action):
+    return -1
 
-    orient = rob.read_wheels()
-    ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (50*t +1))
+# def get_reward(rob:IRobobo, t, action):
+#     image = rob.get_image_front()
+#     pixels = get_number_of_target_pixels(image)
 
-    turns = (0.9 if (action == 'turn_right' or action == 'turn_left' or action == 1 or action == 2) else 0)
+#     obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000) - 0.001
+
+#     orient = rob.read_wheels()
+#     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (50*t +1))
+
+#     turns = (0.9 if (action == 'turn_right' or action == 'turn_left' or action == 1 or action == 2) else 0)
     
-    #reward = pixels * (1-obstacles) * (1 - ori) # check 
-    reward = pixels * (1-obstacles) * (1 - turns)
-    #print(f"pixels: {pixels}, obs: {obstacles}, orient: {ori}, reward: {reward}")
+#     #reward = pixels * (1-obstacles) * (1 - ori) # check 
+#     reward = pixels * (1-obstacles) * (1 - turns)
+#     #print(f"pixels: {pixels}, obs: {obstacles}, orient: {ori}, reward: {reward}")
     
-    return reward
+#     return reward
 
 
 def get_observation(rob:IRobobo):
-    # return [*rob.read_irs(), get_number_of_target_pixels(rob.get_image_front)], rob.get_image_front()
-    return rob.read_irs(), rob.get_image_front()
+    observation = rob.read_irs()
+    observation += get_number_of_tgt_px_left_right(rob.get_image_front())
+
+    return observation, rob.get_image_front()
+    # return rob.read_irs(), rob.get_image_front()
 
 
 def get_simulation_done(rob:IRobobo):
-    image = rob.get_image_front()
-    pixels = get_number_of_target_pixels(image)
-
-    return pixels == 1.001
+    global LAST_FOOD_COLLECTED
+    return LAST_FOOD_COLLECTED == 7
+    
+    
+    # image = rob.get_image_front()
+    # pixels = get_number_of_target_pixels(image)
+    # return pixels == 1.001
+    
+    
     # return any(np.array(rob.read_irs()) > 150)
 
 
