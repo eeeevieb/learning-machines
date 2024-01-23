@@ -10,7 +10,7 @@ def get_number_of_target_pixels(img):
     px_num = blue.shape[0]*blue.shape[1]
     mask = (green > blue+10) & (green > red+10)
     count = np.count_nonzero(mask)
-    return (count / px_num) + 0.001
+    return (count / px_num)
 
 
 def get_number_of_tgt_px_left_right(img):
@@ -23,10 +23,10 @@ def get_reward_for_food(rob:IRobobo, action):
     food_collected = LAST_FOOD_COLLECTED
     if rob.nr_food_collected() > food_collected:
         LAST_FOOD_COLLECTED = LAST_FOOD_COLLECTED + 1
-        print("i'm here now, collected food:", LAST_FOOD_COLLECTED)
+        # print("i'm here now, collected food:", LAST_FOOD_COLLECTED)
         return 100
     else:
-        print("got here for some reason")
+        # print("got here for some reason")
         return 0
 
 
@@ -35,14 +35,20 @@ def get_reward(rob, action):
     cv2.imwrite("/root/results/picture.jpeg", image) 
 
     pixels = get_number_of_target_pixels(image)
-
+    obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 2000)
     food = get_reward_for_food(rob, action)
 
-    reward = pixels + food
+    reward = food if food > 0 else (pixels - obstacles)
 
-    print("last food collected:", LAST_FOOD_COLLECTED, "pixels:", pixels, "food:", food, "reward:", reward)
+    # print("last food collected:", LAST_FOOD_COLLECTED, "pixels:", pixels, "food:", food, "reward:", reward)
 
     return reward
+
+def reset_food(rob):
+    global LAST_FOOD_COLLECTED
+    LAST_FOOD_COLLECTED = 0
+
+
 
 # def get_reward(rob:IRobobo, t, action):
 #     image = rob.get_image_front()

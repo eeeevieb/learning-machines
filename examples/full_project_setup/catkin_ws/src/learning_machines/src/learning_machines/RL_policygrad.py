@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 
-from .irobobo_extensions import get_observation, get_reward, get_reward_for_food, get_simulation_done
+from .irobobo_extensions import get_observation, get_reward, get_reward_for_food, get_simulation_done, reset_food
 from .irobobo_extensions import POSSIBLE_ACTIONS, do_action
 import os
 from tqdm import tqdm
@@ -70,17 +70,20 @@ class PolicyGradientModel:
                           get_simulation_done(self.rob)
                 
                 if done:
-                    self.rob.stop_simulation()
-                    self.rob.set_position(self.init_position, self.init_orientation)
-                    self.rob.play_simulation()
+                    # self.rob.stop_simulation()
+                    # self.rob.set_position(self.init_position, self.init_orientation)
+                    # self.rob.play_simulation()
+                    break
 
                 rewards.append(reward)
                 self.rob.is_blocked(block)
 
             self.rob.stop_simulation()
             self.rob.set_position(self.init_position, self.init_orientation)
+            reset_food(self.rob)
             self.rob.play_simulation()
             self.rob.set_phone_tilt(110, 50)
+
 
             scores_deque.append(sum(rewards))
             scores.append(sum(rewards))
@@ -104,6 +107,8 @@ class PolicyGradientModel:
             optimizer.zero_grad()
             policy_loss.backward()
             optimizer.step()
+
+            # print("scores_deque:", scores_deque, "rewards:", rewards, "sum:", sum(rewards))
             
             if i_episode % print_every == 0:
                 name = f"/root/results/intermediate_cp_{i_episode}.pth"
