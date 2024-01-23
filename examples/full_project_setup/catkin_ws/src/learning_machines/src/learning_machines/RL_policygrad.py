@@ -105,7 +105,7 @@ class PolicyGradientModel:
             optimizer.step()
             
             if i_episode % print_every == 0:
-                name = f"intermediate_cp_{i_episode}.pth"
+                name = f"/root/results/intermediate_cp_{i_episode}.pth"
                 print('Episode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_deque)))
                 self.save_model(name)
             

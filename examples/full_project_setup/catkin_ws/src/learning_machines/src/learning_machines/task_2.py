@@ -8,8 +8,8 @@ import torch
 def train(rob:IRobobo):
     model = PolicyGradientModel(rob, 16)
     print('INFO set up model, starting training')
-    model.train(100, max_t=100, gamma=0.7, print_every=10)
-    model.save_model('100_epochs.pth')
+    model.train(100, max_t=100, gamma=0.7, print_every=5)
+    model.save_model('./results/100_epochs.pth')
 
 
 def run(rob:IRobobo):
