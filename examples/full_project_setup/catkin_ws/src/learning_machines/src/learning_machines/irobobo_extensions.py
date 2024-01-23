@@ -29,7 +29,14 @@ def get_reward_for_food(rob:IRobobo, action):
 
 
 def get_reward(rob, action):
-    return -1
+    image = rob.get_image_front()
+    pixels = get_number_of_target_pixels(image)
+
+    food = get_reward_for_food(action)
+
+    reward = pixels + food
+
+    return reward
 
 # def get_reward(rob:IRobobo, t, action):
 #     image = rob.get_image_front()
