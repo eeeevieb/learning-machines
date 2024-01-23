@@ -29,7 +29,7 @@ def get_reward_for_food(rob:IRobobo, action):
 
 
 def get_reward(rob, action):
-    return -1
+    return 0
 
 # def get_reward(rob:IRobobo, t, action):
 #     image = rob.get_image_front()
