@@ -23,18 +23,24 @@ def get_reward_for_food(rob:IRobobo, action):
     food_collected = LAST_FOOD_COLLECTED
     if rob.nr_food_collected() > food_collected:
         LAST_FOOD_COLLECTED = LAST_FOOD_COLLECTED + 1
+        print("i'm here now, collected food:", LAST_FOOD_COLLECTED)
         return 100
     else:
+        print("got here for some reason")
         return 0
 
 
 def get_reward(rob, action):
     image = rob.get_image_front()
+    cv2.imwrite("/root/results/picture.jpeg", image) 
+
     pixels = get_number_of_target_pixels(image)
 
     food = get_reward_for_food(rob, action)
 
     reward = pixels + food
+
+    print("last food collected:", LAST_FOOD_COLLECTED, "pixels:", pixels, "food:", food, "reward:", reward)
 
     return reward
 

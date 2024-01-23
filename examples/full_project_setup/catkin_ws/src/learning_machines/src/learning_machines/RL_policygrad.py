@@ -66,7 +66,7 @@ class PolicyGradientModel:
                 block = do_action(self.rob, POSSIBLE_ACTIONS[action])
                 # state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
                 state, reward, done = get_observation(self.rob)[0],\
-                      get_reward_for_food(self.rob, action)+get_reward(self.rob, action),\
+                          get_reward(self.rob, action),\
                           get_simulation_done(self.rob)
                 
                 if done:
@@ -80,6 +80,7 @@ class PolicyGradientModel:
             self.rob.stop_simulation()
             self.rob.set_position(self.init_position, self.init_orientation)
             self.rob.play_simulation()
+            self.rob.set_phone_tilt(110, 50)
 
             scores_deque.append(sum(rewards))
             scores.append(sum(rewards))
