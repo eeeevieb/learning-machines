@@ -32,7 +32,7 @@ def get_reward(rob, action):
     image = rob.get_image_front()
     pixels = get_number_of_target_pixels(image)
 
-    food = get_reward_for_food(action)
+    food = get_reward_for_food(rob, action)
 
     reward = pixels + food
 
