@@ -37,7 +37,7 @@ def run_task_2(rob):
         rob.play_simulation()
     print('INFO started simulation')
 
-    rob.set_phone_tilt(90, 50)
+    rob.set_phone_tilt(110, 50)
     
     train(rob)
     # run(rob)

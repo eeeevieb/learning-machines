@@ -66,20 +66,24 @@ class PolicyGradientModel:
                 # state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
                 #   get_reward_for_food(self.rob, action)+get_reward(self.rob, action),\
                 state, reward, done = get_observation(self.rob)[0],\
-                    get_reward_for_forward(self.rob, action),\
+                          get_reward(self.rob, action),\
                           get_simulation_done(self.rob)
                 
                 if done:
-                    self.rob.stop_simulation()
-                    self.rob.set_position(self.init_position, self.init_orientation)
-                    self.rob.play_simulation()
+                    # self.rob.stop_simulation()
+                    # self.rob.set_position(self.init_position, self.init_orientation)
+                    # self.rob.play_simulation()
+                    break
 
                 rewards.append(reward)
                 self.rob.is_blocked(block)
 
             self.rob.stop_simulation()
             self.rob.set_position(self.init_position, self.init_orientation)
+            reset_food(self.rob)
             self.rob.play_simulation()
+            self.rob.set_phone_tilt(110, 50)
+
 
             scores_deque.append(sum(rewards))
             scores.append(sum(rewards))
@@ -103,6 +107,8 @@ class PolicyGradientModel:
             optimizer.zero_grad()
             policy_loss.backward()
             optimizer.step()
+
+            # print("scores_deque:", scores_deque, "rewards:", rewards, "sum:", sum(rewards))
             
             if i_episode % print_every == 0:
                 name = f"/root/results/go_forward_{i_episode}.pth"
