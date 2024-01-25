@@ -35,11 +35,16 @@ def get_reward(rob, action):
     cv2.imwrite("/root/results/picture.jpeg", image) 
 
     pixels = get_number_of_target_pixels(image)
-    obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 2000)
+    obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000)
     food = get_reward_for_food(rob, action)
 
     reward = food if food > 0 else (pixels - obstacles)
-
+    if food > 0:
+        return food
+    elif obstacles > 0.3:
+        return 0-obstacles
+    else:
+        return pixels
     # print("last food collected:", LAST_FOOD_COLLECTED, "pixels:", pixels, "food:", food, "reward:", reward)
 
     return reward
