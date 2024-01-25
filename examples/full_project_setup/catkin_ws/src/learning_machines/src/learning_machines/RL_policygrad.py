@@ -15,7 +15,7 @@ from tqdm import tqdm
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-S_SIZE = 10 # 10 numbers per observation: 8 irs sensors + number of target pixels in left and right part
+S_SIZE = 12 # 10 numbers per observation: 8 irs sensors + number of target pixels in 4 quadrants
 A_SIZE = 4 # 4 actions - forward, right, left, back
 
 

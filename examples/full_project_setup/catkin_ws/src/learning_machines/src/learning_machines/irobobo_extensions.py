@@ -15,8 +15,15 @@ def get_number_of_target_pixels(img):
 
 def get_number_of_tgt_px_left_right(img):
     left_img, right_img = img[:, :img.shape[1]//2, :], img[:, img.shape[1]//2:, :]
+    
     return get_number_of_target_pixels(left_img), get_number_of_target_pixels(right_img)
 
+def get_number_of_tgt_px_quad(img):
+    top_left = get_number_of_target_pixels(img[:img.shape[0]//2, :img.shape[1]//2, :])
+    top_right = get_number_of_target_pixels(img[:img.shape[0]//2, img.shape[1]//2:, :])
+    bottom_left = get_number_of_target_pixels(img[img.shape[0]//2:, :img.shape[1]//2, :])
+    bottom_right = get_number_of_target_pixels(img[img.shape[0]//2:, img.shape[1]//2:, :])
+    return top_left, top_right, bottom_left, bottom_right
 
 def get_reward_for_food(rob:IRobobo, action):
     global LAST_FOOD_COLLECTED
@@ -34,20 +41,24 @@ def get_reward(rob, action):
     image = rob.get_image_front()
     cv2.imwrite("/root/results/picture.jpeg", image) 
 
-    pixels = get_number_of_target_pixels(image)
+    top_half = get_number_of_target_pixels(image[:image.shape[0]//2, :, :])
+    bottom_half = get_number_of_target_pixels(image[image.shape[0]//2:, :, :])
+
+    #pixels = get_number_of_target_pixels(image)
     obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000)
     food = get_reward_for_food(rob, action)
 
-    reward = food if food > 0 else (pixels - obstacles)
+    #reward = food if food > 0 else (pixels - obstacles)
+    
     if food > 0:
-        return food
+        reward = food
     elif obstacles > 0.3:
-        return 0-obstacles
+        reward = 0-obstacles
     else:
-        return pixels
-    # print("last food collected:", LAST_FOOD_COLLECTED, "pixels:", pixels, "food:", food, "reward:", reward)
-
+        reward = 2*top_half + bottom_half
+    print("total food:", LAST_FOOD_COLLECTED, "pixels:", round(bottom_half,3), "food:", food, "obstacles:", obstacles, "reward:", reward)
     return reward
+
 
 def reset_food(rob):
     global LAST_FOOD_COLLECTED
@@ -75,7 +86,7 @@ def reset_food(rob):
 
 def get_observation(rob:IRobobo):
     observation = rob.read_irs()
-    observation += get_number_of_tgt_px_left_right(rob.get_image_front())
+    observation += get_number_of_tgt_px_quad(rob.get_image_front())
 
     return observation, rob.get_image_front()
     # return rob.read_irs(), rob.get_image_front()
