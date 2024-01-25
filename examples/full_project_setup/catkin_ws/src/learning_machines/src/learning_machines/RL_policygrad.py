@@ -47,7 +47,7 @@ class PolicyGradientModel:
         self.init_position = self.rob.position()
         self.init_orientation = self.rob.read_orientation()
         self.policy = Policy(S_SIZE, A_SIZE, hidden_size)
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-3)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=0.3)
 
 
     def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every):
