@@ -38,22 +38,11 @@ def get_reward(rob, action):
 
     return reward
 
-# def get_reward(rob:IRobobo, t, action):
-#     image = rob.get_image_front()
-#     pixels = get_number_of_target_pixels(image)
 
-#     obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000) - 0.001
-
-#     orient = rob.read_wheels()
-#     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (50*t +1))
-
-#     turns = (0.9 if (action == 'turn_right' or action == 'turn_left' or action == 1 or action == 2) else 0)
-    
-#     #reward = pixels * (1-obstacles) * (1 - ori) # check 
-#     reward = pixels * (1-obstacles) * (1 - turns)
-#     #print(f"pixels: {pixels}, obs: {obstacles}, orient: {ori}, reward: {reward}")
-    
-#     return reward
+def get_reward_for_forward(rob, action):
+    if action == 0:
+        return 10
+    else: return 0
 
 
 def get_observation(rob:IRobobo):
