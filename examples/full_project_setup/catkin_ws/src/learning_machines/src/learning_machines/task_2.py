@@ -7,14 +7,16 @@ import torch
 
 def train(rob:IRobobo):
     model = PolicyGradientModel(rob, 16)
+    model.policy.load_state_dict(torch.load('/root/results/go_forward_5.pth'))
     print('INFO set up model, starting training')
+    model.policy.load_state_dict(torch.load('/root/results/go_forward_5.pth'))
     model.train(100, max_t=100, gamma=0.7, print_every=5)
     model.save_model('./results/100_epochs.pth')
 
 
 def run(rob:IRobobo):
     model = PolicyGradientModel(rob, 16)
-    model.policy.load_state_dict(torch.load('./results/CHECKPOINT_NAME.pth'))
+    model.policy.load_state_dict(torch.load('/root/results/CHECKPOINT_NAME.pth'))
     print('INFO loaded model from checkpoint')
 
     reward = 0
@@ -26,7 +28,7 @@ def run(rob:IRobobo):
         action, prob = model.predict(observation[0])
         print(f'INFO action: {action}, probability: {prob}')
         do_action(rob, action)
-        reward += get_reward(rob,iter,action)
+        reward += get_reward(rob,action)
         iter += 1
         if iter % 50 == 0:
             print('reward:', reward)
