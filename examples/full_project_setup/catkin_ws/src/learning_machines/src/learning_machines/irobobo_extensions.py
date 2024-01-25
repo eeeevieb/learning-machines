@@ -56,7 +56,7 @@ def get_reward(rob, action):
         reward = 0-obstacles
     else:
         reward = 2*top_half + bottom_half
-    print("total food:", LAST_FOOD_COLLECTED, "pixels:", round(bottom_half,3), "food:", food, "obstacles:", obstacles, "reward:", reward)
+    #print("total food:", LAST_FOOD_COLLECTED, "pixels:", round(bottom_half,3), "food:", food, "obstacles:", obstacles, "reward:", reward)
     return reward
 
 
