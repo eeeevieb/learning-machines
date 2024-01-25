@@ -8,8 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
 
-from .irobobo_extensions import get_observation, get_reward, get_reward_for_food, get_simulation_done, reset_food
-from .irobobo_extensions import POSSIBLE_ACTIONS, do_action
+from .irobobo_extensions import *
 import os
 from tqdm import tqdm
 
@@ -36,7 +35,7 @@ class Policy(nn.Module):
         probs = self.forward(state).cpu()
         try:
             m = Categorical(probs)
-        except:
+        except: # probs are [NaN, NaN, NaN, NaN]
             m = Categorical([.25, .25, .25, .25])
         action = m.sample()
         return action.item(), m.log_prob(action)
@@ -65,6 +64,7 @@ class PolicyGradientModel:
                 
                 block = do_action(self.rob, POSSIBLE_ACTIONS[action])
                 # state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
+                #   get_reward_for_food(self.rob, action)+get_reward(self.rob, action),\
                 state, reward, done = get_observation(self.rob)[0],\
                           get_reward(self.rob, action),\
                           get_simulation_done(self.rob)
@@ -111,7 +111,7 @@ class PolicyGradientModel:
             # print("scores_deque:", scores_deque, "rewards:", rewards, "sum:", sum(rewards))
             
             if i_episode % print_every == 0:
-                name = f"/root/results/intermediate_cp_{i_episode}.pth"
+                name = f"/root/results/go_forward_{i_episode}.pth"
                 print('Episode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_deque)))
                 self.save_model(name)
             
