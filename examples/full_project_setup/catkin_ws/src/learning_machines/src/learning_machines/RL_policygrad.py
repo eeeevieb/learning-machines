@@ -47,7 +47,7 @@ class PolicyGradientModel:
         self.init_position = self.rob.position()
         self.init_orientation = self.rob.read_orientation()
         self.policy = Policy(S_SIZE, A_SIZE, hidden_size)
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=0.3)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=0.01)
 
 
     def _reinforce(self, policy, optimizer, n_training_episodes, max_t, gamma, print_every):
@@ -57,6 +57,7 @@ class PolicyGradientModel:
         for i_episode in tqdm(range(1, n_training_episodes+1)):
             saved_log_probs = []
             rewards = []
+        
             state = get_observation(self.rob)[0]
             for t in range(max_t):
                 action, log_prob = policy.act(state)
@@ -66,7 +67,7 @@ class PolicyGradientModel:
                 # state, reward, done = get_observation(self.rob)[0], get_reward(self.rob, t, action), get_simulation_done(self.rob)
                 #   get_reward_for_food(self.rob, action)+get_reward(self.rob, action),\
                 state, reward, done = get_observation(self.rob)[0],\
-                          get_reward(self.rob, action),\
+                          get_reward(self.rob, action, t),\
                           get_simulation_done(self.rob)
                 
                 if done:
@@ -84,7 +85,7 @@ class PolicyGradientModel:
             self.rob.play_simulation()
             self.rob.set_phone_tilt(110, 50)
 
-
+            print(sum(rewards))
             scores_deque.append(sum(rewards))
             scores.append(sum(rewards))
             
@@ -111,7 +112,7 @@ class PolicyGradientModel:
             # print("scores_deque:", scores_deque, "rewards:", rewards, "sum:", sum(rewards))
             
             if i_episode % print_every == 0:
-                name = f"/root/results/go_forward_{i_episode}.pth"
+                name = f"/root/results/policy_{i_episode}.pth"
                 print('Episode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_deque)))
                 self.save_model(name)
             

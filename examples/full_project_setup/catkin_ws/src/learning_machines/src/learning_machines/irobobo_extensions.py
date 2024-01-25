@@ -37,7 +37,7 @@ def get_reward_for_food(rob:IRobobo, action):
         return 0
 
 
-def get_reward(rob, action):
+def get_reward(rob, action, t):
     image = rob.get_image_front()
     cv2.imwrite("/root/results/picture.jpeg", image) 
 
@@ -48,15 +48,21 @@ def get_reward(rob, action):
     obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000)
     food = get_reward_for_food(rob, action)
 
-    #reward = food if food > 0 else (pixels - obstacles)
+    orient = rob.read_wheels()
+    ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (100*(t+1)))
     
     if food > 0:
         reward = food
+    elif bottom_half+top_half < 0.1:
+        reward = -2 - ori
     elif obstacles > 0.3:
-        reward = 0-obstacles
+        reward = (-3 * obstacles) - ori
     else:
         reward = 2*top_half + bottom_half
-    #print("total food:", LAST_FOOD_COLLECTED, "pixels:", round(bottom_half,3), "food:", food, "obstacles:", obstacles, "reward:", reward)
+    
+    #reward -= ori
+
+    #print(t,"total food:", LAST_FOOD_COLLECTED, "pixels:", round(bottom_half,3), "food:", food, "obstacles:", round(obstacles,3), "ori:",round(ori,3), "reward:", round(reward,3))
     return reward
 
 
@@ -85,9 +91,7 @@ def reset_food(rob):
 
 
 def get_observation(rob:IRobobo):
-    observation = rob.read_irs()
-    observation += get_number_of_tgt_px_quad(rob.get_image_front())
-
+    observation = rob.read_irs() + list(get_number_of_tgt_px_quad(rob.get_image_front()))
     return observation, rob.get_image_front()
     # return rob.read_irs(), rob.get_image_front()
 
@@ -112,12 +116,12 @@ def do_action(rob:IRobobo, action):
         return 0
     block = 0
     if action == 'move_forward':
-        block = rob.move(100, 100, 100)
+        block = rob.move(50, 50, 500)
     elif action == 'turn_right':
-        block = rob.move(50, -50, 50)
+        block = rob.move(20, -20, 250)
     elif action == 'turn_left':
-        block = rob.move(-50, 50, 50)
+        block = rob.move(-20, 20, 250)
     else:
-        block = rob.move(-50, -50, 100)
+        block = rob.move(-20, -20, 500)
     return block
     
