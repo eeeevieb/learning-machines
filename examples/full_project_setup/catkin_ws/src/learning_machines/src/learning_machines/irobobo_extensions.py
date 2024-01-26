@@ -58,7 +58,7 @@ def get_reward(rob, action, t):
     elif obstacles > 0.3:
         reward = (-3 * obstacles) - ori
     else:
-        reward = 2*top_half + bottom_half
+        reward = top_half + 2*bottom_half
     
     #reward -= ori
 
