@@ -25,6 +25,22 @@ def get_number_of_tgt_px_quad(img):
     bottom_right = get_number_of_target_pixels(img[img.shape[0]//2:, img.shape[1]//2:, :])
     return top_left, top_right, bottom_left, bottom_right
 
+def get_4x4_grid(rob):
+    img = rob.get_image_front()
+    rows, cols, channels = img.shape
+
+    # Calculate the size of each square
+    square_height = rows // 4
+    square_width = cols // 4
+
+    # Extract the 16 squares
+    grid = []
+    for i in range(4):
+        for j in range(4):
+            square = img[i * square_height: (i + 1) * square_height, j * square_width: (j + 1) * square_width, :]
+            grid.append(get_number_of_target_pixels(square))
+    return grid
+
 def get_reward_for_food(rob:IRobobo, action):
     global LAST_FOOD_COLLECTED
     food_collected = LAST_FOOD_COLLECTED
@@ -38,31 +54,33 @@ def get_reward_for_food(rob:IRobobo, action):
 
 
 def get_reward(rob, action, t):
+    reward = 0
     image = rob.get_image_front()
     cv2.imwrite("/root/results/picture.jpeg", image) 
 
     top_half = get_number_of_target_pixels(image[:image.shape[0]//2, :, :])
     bottom_half = get_number_of_target_pixels(image[image.shape[0]//2:, :, :])
 
-    #pixels = get_number_of_target_pixels(image)
     obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000)
     food = get_reward_for_food(rob, action)
 
     orient = rob.read_wheels()
     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (100*(t+1)))
     
-    if food > 0:
-        reward = food
-    elif bottom_half+top_half < 0.1:
-        reward = -2 - ori
-    elif obstacles > 0.3:
-        reward = (-3 * obstacles) - ori
-    else:
-        reward = top_half + 2*bottom_half
-    
-    #reward -= ori
-
-    #print(t,"total food:", LAST_FOOD_COLLECTED, "pixels:", round(bottom_half,3), "food:", food, "obstacles:", round(obstacles,3), "ori:",round(ori,3), "reward:", round(reward,3))
+    # if food > 0:
+    #     reward = food
+    # elif bottom_half+top_half < 0.1:
+    #     reward = -2 - ori
+    # elif obstacles > 0.3:
+    #     reward = (-3 * obstacles) - ori
+    # else:
+    #     reward = top_half + 2*bottom_half
+    food=rob.robot_got_food()
+    if food:
+        reward = 1
+    pixels= 10*top_half + 20*bottom_half
+    reward+=pixels-t
+    print(t,POSSIBLE_ACTIONS[action],"pixels:", round(pixels,3), "food:", food, "obstacles:", round(obstacles,3), "ori:",round(ori,3), "reward:", round(reward,3))
     return reward
 
 
@@ -71,29 +89,9 @@ def reset_food(rob):
     LAST_FOOD_COLLECTED = 0
 
 
-
-# def get_reward(rob:IRobobo, t, action):
-#     image = rob.get_image_front()
-#     pixels = get_number_of_target_pixels(image)
-
-#     obstacles = (np.clip(max(rob.read_irs()), 0, 1000) / 1000) - 0.001
-
-#     orient = rob.read_wheels()
-#     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (50*t +1))
-
-#     turns = (0.9 if (action == 'turn_right' or action == 'turn_left' or action == 1 or action == 2) else 0)
-    
-#     #reward = pixels * (1-obstacles) * (1 - ori) # check 
-#     reward = pixels * (1-obstacles) * (1 - turns)
-#     #print(f"pixels: {pixels}, obs: {obstacles}, orient: {ori}, reward: {reward}")
-    
-#     return reward
-
-
 def get_observation(rob:IRobobo):
-    observation = rob.read_irs() + list(get_number_of_tgt_px_quad(rob.get_image_front()))
+    observation = rob.read_irs() + get_4x4_grid(rob)
     return observation, rob.get_image_front()
-    # return rob.read_irs(), rob.get_image_front()
 
 
 def get_simulation_done(rob:IRobobo):
