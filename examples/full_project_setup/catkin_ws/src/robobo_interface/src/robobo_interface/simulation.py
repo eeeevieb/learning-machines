@@ -621,4 +621,4 @@ class SimulationRobobo(IRobobo):
     def robot_got_food(self):
         food_position = self.get_food_position()
         pusher = self.get_pusher_position()
-        return food_position.x > pusher.x and food_position.x < pusher.x+0.05 and food_position.y < pusher.y+0.05 and food_position.y > pusher-0.05
+        return food_position.x < pusher.x and food_position.x > pusher.x-0.1 and food_position.y < pusher.y+0.1 and food_position.y > pusher.y-0.1

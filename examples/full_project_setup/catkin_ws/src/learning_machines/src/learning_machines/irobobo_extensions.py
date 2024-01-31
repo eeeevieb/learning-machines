@@ -4,6 +4,7 @@ import cv2
 
 POSSIBLE_ACTIONS = ['move_forward', 'turn_right', 'turn_left', 'move_back']
 LAST_FOOD_COLLECTED:int = 0
+LAST_REWARD:int = 0
 
 def get_number_of_target_pixels(img):
     blue, green, red = cv2.split(img)
@@ -54,7 +55,9 @@ def get_reward_for_food(rob:IRobobo, action):
 
 
 def get_reward(rob, action, t):
+    global LAST_REWARD
     reward = 0
+    temp = 0
     image = rob.get_image_front()
     cv2.imwrite("/root/results/picture.jpeg", image) 
 
@@ -67,26 +70,26 @@ def get_reward(rob, action, t):
     orient = rob.read_wheels()
     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (100*(t+1)))
     
-    # if food > 0:
-    #     reward = food
-    # elif bottom_half+top_half < 0.1:
-    #     reward = -2 - ori
-    # elif obstacles > 0.3:
-    #     reward = (-3 * obstacles) - ori
-    # else:
-    #     reward = top_half + 2*bottom_half
     food=rob.robot_got_food()
     if food:
         reward = 1
-    pixels= 10*top_half + 20*bottom_half
-    reward+=pixels-t
+    pixels= 100*top_half + 200*bottom_half
+    reward+=pixels#-t
+
+    if reward < LAST_REWARD:
+        temp = 1
+    else:
+        LAST_REWARD = reward
+    reward-=temp
+
     print(t,POSSIBLE_ACTIONS[action],"pixels:", round(pixels,3), "food:", food, "obstacles:", round(obstacles,3), "ori:",round(ori,3), "reward:", round(reward,3))
     return reward
 
 
 def reset_food(rob):
-    global LAST_FOOD_COLLECTED
+    global LAST_FOOD_COLLECTED, LAST_REWARD
     LAST_FOOD_COLLECTED = 0
+    LAST_REWARD = 0
 
 
 def get_observation(rob:IRobobo):
