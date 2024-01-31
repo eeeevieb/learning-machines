@@ -13,6 +13,12 @@ def get_number_of_target_pixels(img):
     count = np.count_nonzero(mask)
     return (count / px_num)
 
+def get_red(img):
+    blue, green, red = cv2.split(img)
+    px_num = blue.shape[0]*blue.shape[1]
+    mask = (red > blue+10) & (red > green+10)
+    count = np.count_nonzero(mask)
+    return (count / px_num)
 
 def get_number_of_tgt_px_left_right(img):
     left_img, right_img = img[:, :img.shape[1]//2, :], img[:, img.shape[1]//2:, :]
@@ -25,6 +31,13 @@ def get_number_of_tgt_px_quad(img):
     bottom_left = get_number_of_target_pixels(img[img.shape[0]//2:, :img.shape[1]//2, :])
     bottom_right = get_number_of_target_pixels(img[img.shape[0]//2:, img.shape[1]//2:, :])
     return top_left, top_right, bottom_left, bottom_right
+
+def get_red_quad(img):
+    top_left = get_red(img[:img.shape[0]//2, :img.shape[1]//2, :])
+    top_right = get_red(img[:img.shape[0]//2, img.shape[1]//2:, :])
+    bottom_left = get_red(img[img.shape[0]//2:, :img.shape[1]//2, :])
+    bottom_right = get_red(img[img.shape[0]//2:, img.shape[1]//2:, :])
+    return [top_left, top_right, bottom_left, bottom_right]
 
 def get_4x4_grid(rob):
     img = rob.get_image_front()
@@ -71,9 +84,12 @@ def get_reward(rob, action, t):
     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (100*(t+1)))
     
     food=rob.robot_got_food()
+
     if food:
         reward = 1
     pixels= 100*top_half + 200*bottom_half
+    if pixels < 0.1:
+        pixels = -1
     reward+=pixels#-t
 
     if reward < LAST_REWARD:
@@ -82,7 +98,7 @@ def get_reward(rob, action, t):
         LAST_REWARD = reward
     reward-=temp
 
-    print(t,POSSIBLE_ACTIONS[action],"pixels:", round(pixels,3), "food:", food, "obstacles:", round(obstacles,3), "ori:",round(ori,3), "reward:", round(reward,3))
+    print(t,POSSIBLE_ACTIONS[action],"pixels:", round(pixels,3), "food:", food, "obstacles:", round(obstacles,3), "temp:",temp, "reward:", round(reward,3))
     return reward
 
 
@@ -93,7 +109,7 @@ def reset_food(rob):
 
 
 def get_observation(rob:IRobobo):
-    observation = rob.read_irs() + get_4x4_grid(rob)
+    observation = rob.read_irs() + get_4x4_grid(rob) + get_red_quad(rob.get_image_front())
     return observation, rob.get_image_front()
 
 

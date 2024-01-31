@@ -9,7 +9,7 @@ def train(rob:IRobobo):
     model = PolicyGradientModel(rob, 16)
     #model.policy.load_state_dict(torch.load('/root/results/go_forward_starting_position.pth'))
     print('INFO set up model, starting training')
-    model.train(100, max_t=200, gamma=0.7, print_every=5)
+    model.train(100, max_t=100, gamma=0.7, print_every=5)
     model.save_model('./results/100_epochs.pth')
 
 
