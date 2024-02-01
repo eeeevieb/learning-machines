@@ -6,7 +6,7 @@ import torch
 
 
 def train(rob:IRobobo):
-    model = PolicyGradientModel(rob, 16)
+    model = PolicyGradientModel(rob, 40)
     #model.policy.load_state_dict(torch.load('/root/results/go_forward_starting_position.pth'))
     print('INFO set up model, starting training')
     model.train(100, max_t=100, gamma=0.7, print_every=5)
@@ -14,7 +14,7 @@ def train(rob:IRobobo):
 
 
 def run(rob:IRobobo):
-    model = PolicyGradientModel(rob, 16)
+    model = PolicyGradientModel(rob, 40)
     model.policy.load_state_dict(torch.load('/root/results/go_forward_starting_position.pth'))
     print('INFO loaded model from checkpoint')
 

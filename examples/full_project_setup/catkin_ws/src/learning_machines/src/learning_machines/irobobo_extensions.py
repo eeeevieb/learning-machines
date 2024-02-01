@@ -7,7 +7,8 @@ POSSIBLE_ACTIONS = ['move_forward', 'turn_right', 'turn_left', 'move_back']
 LAST_FOOD_COLLECTED:int = 0
 LAST_REWARD:int = 0
 MAX_REWARD:int = 0
-LAST_MOVES:deque= deque(maxlen=20)
+LAST_OBS:deque= deque(maxlen=20)
+LAST_MOVES:deque= deque(maxlen=10)
 
 def get_number_of_target_pixels(img):
     blue, green, red = cv2.split(img)
@@ -68,15 +69,23 @@ def get_reward_for_food(rob:IRobobo, action):
         return 0
 
 def is_stuck():
+    global LAST_OBS
+    count = 0
+    for i in LAST_OBS:
+        if i > 0.7: count+=1
+    return (True if count == len(LAST_OBS) else False)
+
+def is_repeating():
     global LAST_MOVES
     count = 0
-    for i in LAST_MOVES:
-        if i > 0.7: count+=1
-    return True if count == len(LAST_MOVES) else False
+    for i in LAST_MOVES: 
+        if i == LAST_MOVES[0]: 
+            count+=1
+    return (True if count == 10 else False)
 
 def get_reward(rob, action, t):
     #reset values
-    global LAST_REWARD, MAX_REWARD, LAST_MOVES
+    global LAST_REWARD, MAX_REWARD, LAST_OBS, LAST_MOVES
     reward = 0
     temp = 0
     pixels = 0
@@ -95,22 +104,25 @@ def get_reward(rob, action, t):
     orient = rob.read_wheels()
     ori = (abs(orient.wheel_pos_l - orient.wheel_pos_r) / (100*(t+1)))
     food=rob.robot_got_food()
-    LAST_MOVES.append(obstacles)
-    if is_stuck(): return -100
+    LAST_OBS.append(obstacles)
+    LAST_MOVES.append(action)
+    
     #reward function
     if obstacles > 0.7:
         reward -= obstacles
     elif food:
-        reward += 2
+        reward += 5
         pixels= 100*top_half + 200*bottom_half
         if pixels < 0.1:
             pixels = -1
     else:
-        pixels= red[0]+red[1]+ 5*red[2]+ 5*red[3]
+        pixels= (red[0]+red[1]+ 5*red[2]+ 5*red[3])*10
         if pixels < 0.1:
             pixels = -1
     reward+=pixels#-t
-
+    if is_repeating(): reward = -10
+    if is_stuck(): reward= -100
+    
     if reward < LAST_REWARD:
         temp = -0.1
     if reward > MAX_REWARD:
@@ -119,17 +131,18 @@ def get_reward(rob, action, t):
 
     LAST_REWARD = reward
     reward+=temp
-
+    
     print(t,POSSIBLE_ACTIONS[action],"pixels:", round(pixels,3), "food:", food, "obstacles:", round(obstacles,3), "temp:",temp, "reward:", round(reward,3))
     return reward
 
 
 def reset_food(rob):
-    global LAST_FOOD_COLLECTED, LAST_REWARD, MAX_REWARD, LAST_MOVES
+    global LAST_FOOD_COLLECTED, LAST_REWARD, MAX_REWARD, LAST_MOVES, LAST_OBS
     LAST_FOOD_COLLECTED = 0
     LAST_REWARD = 0
     MAX_REWARD = 0
-    LAST_MOVES = deque(maxlen=20)
+    LAST_MOVES = deque(maxlen=10)
+    LAST_OBS = deque(maxlen=20)
 
 
 def get_observation(rob:IRobobo):
@@ -138,7 +151,8 @@ def get_observation(rob:IRobobo):
 
 
 def get_simulation_done(rob:IRobobo):
-    return rob.base_got_food() or is_stuck()
+    global LAST_REWARD
+    return rob.base_got_food() or LAST_REWARD < -50
 
 
 def do_action(rob:IRobobo, action):
