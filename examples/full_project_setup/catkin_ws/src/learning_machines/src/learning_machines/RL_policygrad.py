@@ -69,15 +69,15 @@ class PolicyGradientModel:
                 state, reward, done = get_observation(self.rob)[0],\
                           get_reward(self.rob, action, t),\
                           get_simulation_done(self.rob)
-                
+                rewards.append(reward)
+                self.rob.is_blocked(block)
                 if done:
                     # self.rob.stop_simulation()
                     # self.rob.set_position(self.init_position, self.init_orientation)
                     # self.rob.play_simulation()
                     break
 
-                rewards.append(reward)
-                self.rob.is_blocked(block)
+                
 
             self.rob.stop_simulation()
             self.rob.set_position(self.init_position, self.init_orientation)
